@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>OHKA | 統合管理システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --gold:#C9A84C;--gold2:#8B6914;--gold-pale:#FDF6DC;
+  --black:#0C0C0C;--panel:#161616;--panel2:#1E1E1E;--panel3:#242424;
+  --border:rgba(255,255,255,0.07);--white:#F5EFE0;--muted:#666;
+  --green:#4CAF82;--green2:#2D6B4A;
+  --red:#E05555;--red2:#8B2A2A;
+  --blue:#5591E0;--blue2:#2A4A8B;
+  --yellow:#E0C955;
+}
+html,body{font-family:'Noto Sans JP',sans-serif;background:var(--black);color:var(--white);min-height:100dvh;overscroll-behavior:none}
+
+/* ── SPLASH ── */
+#splash{position:fixed;inset:0;z-index:9999;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;animation:splashOut 0.4s ease 1.8s forwards}
+@keyframes splashOut{to{opacity:0;pointer-events:none;display:none;visibility:hidden}}
+.sl{font-family:'Bebas Neue';font-size:52px;letter-spacing:8px;color:var(--gold);text-shadow:0 0 40px rgba(201,168,76,0.5);animation:fUp 0.5s ease 0.1s both}
+.ss{font-size:11px;letter-spacing:4px;color:var(--muted);animation:fUp 0.5s ease 0.3s both}
+.sln{width:0;height:1px;background:var(--gold2);animation:sLine 0.7s ease 0.5s forwards}
+@keyframes sLine{to{width:64px}}
+.ss2{font-size:10px;letter-spacing:2px;color:#333;animation:fUp 0.5s ease 0.6s both}
+@keyframes fUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── MODE SELECT ── */
+#mode-select{position:fixed;inset:0;z-index:99999;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px;opacity:0;pointer-events:none;transition:opacity 0.4s}
+#mode-select.show{opacity:1;pointer-events:all}
+.ms-title{font-family:'Bebas Neue';font-size:28px;letter-spacing:6px;color:var(--gold);text-align:center}
+.ms-sub{font-size:11px;color:var(--muted);letter-spacing:3px;text-align:center;margin-top:-10px}
+.ms-btns{display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px}
+.ms-btn{padding:18px 20px;border-radius:12px;border:1px solid;background:transparent;cursor:pointer;font-family:'Noto Sans JP';transition:all 0.2s;text-align:left;-webkit-tap-highlight-color:rgba(255,255,255,0.1);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.ms-btn-main{border-color:var(--gold2);color:var(--gold)}
+.ms-btn-main:hover{background:rgba(201,168,76,0.08)}
+.ms-btn-member{border-color:#2a4a2a;color:var(--green)}
+.ms-btn-member:hover{background:rgba(76,175,130,0.08)}
+.ms-btn-admin{border-color:#2a2a4a;color:var(--blue)}
+.ms-btn-admin:hover{background:rgba(85,145,224,0.08)}
+.ms-btn-icon{font-size:20px;margin-bottom:5px;display:block}
+.ms-btn-label{font-size:15px;font-weight:700;display:block}
+.ms-btn-desc{font-size:11px;color:var(--muted);margin-top:2px;display:block}
+
+/* ── APP ── */
+#app{display:flex;flex-direction:column;min-height:100dvh}
+header{background:linear-gradient(180deg,#111 0%,var(--black) 100%);border-bottom:1px solid var(--gold2);padding:13px 16px 10px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.6)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hdr-logo{font-family:'Bebas Neue';font-size:20px;letter-spacing:4px;color:var(--gold)}
+.hdr-title{font-size:10px;color:var(--muted);letter-spacing:3px}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.hdr-mode{font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid;font-weight:700;letter-spacing:1px;cursor:pointer}
+.hdr-mode-patrol{border-color:var(--gold2);color:var(--gold2)}
+.hdr-mode-member{border-color:var(--green2);color:var(--green)}
+.hdr-mode-admin{border-color:var(--blue2);color:var(--blue)}
+.sw{position:relative}
+.si{width:100%;background:var(--panel2);border:1px solid #2a2a2a;border-radius:8px;padding:10px 14px 10px 38px;color:var(--white);font-family:'Noto Sans JP';font-size:14px;outline:none;transition:border-color 0.2s}
+.si:focus{border-color:var(--gold2)}
+.si::placeholder{color:#444}
+.si-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none}
+
+.nav{display:flex;background:var(--panel);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nt{flex:0 0 auto;padding:11px 15px;font-size:12px;font-family:'Noto Sans JP';color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s;white-space:nowrap}
+.nt.active{color:var(--gold);border-bottom-color:var(--gold)}
+.nt.active-green{color:var(--green);border-bottom-color:var(--green)}
+.nt.active-blue{color:var(--blue);border-bottom-color:var(--blue)}
+.nt:hover{color:var(--white)}
+
+.content{flex:1;overflow-y:auto;padding:0 0 80px}
+.sec{display:none}
+.sec.active{display:block;animation:fIn 0.25s ease}
+@keyframes fIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PATROL (巡回シート) ── */
+.co-hdr{display:flex;align-items:center;gap:10px;padding:13px 16px 9px;position:sticky;top:0;z-index:10;background:var(--black)}
+.co-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.co-nm{font-size:13px;font-weight:700}
+.co-cnt{font-size:10px;color:var(--muted);margin-left:auto}
+.dlbl{padding:5px 16px 3px;font-size:9px;letter-spacing:3px;color:var(--gold2);text-transform:uppercase;border-bottom:1px solid var(--border)}
+.mr{display:flex;align-items:center;gap:11px;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s}
+.mr:active{background:rgba(201,168,76,0.05)}
+.mr.mgmt{background:rgba(201,168,76,0.025)}
+.mr.mgmt .mn{color:var(--gold-pale)}
+.mr.isnew .mn{color:#f8a5c2}
+.rk{flex-shrink:0;width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:12px;font-weight:700;letter-spacing:0.5px}
+.mi{flex:1;min-width:0}
+.mn{font-size:14px;font-weight:700;color:var(--white)}
+.mrl{display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap}
+.mro{font-size:11px;color:#aaa}
+.badge{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700;letter-spacing:1px}
+.b-hon{background:rgba(192,57,43,0.2);color:#e74c3c}
+.b-jik{background:rgba(44,82,130,0.2);color:#63b3ed}
+.b-sos{background:rgba(39,103,73,0.2);color:#68d391}
+.b-ken{background:rgba(201,168,76,0.2);color:var(--gold)}
+.b-new{background:rgba(248,165,194,0.2);color:#f8a5c2}
+.mrr{flex-shrink:0;text-align:right}
+.mdt{font-size:9px;color:var(--muted);margin-bottom:2px}
+.msal{font-family:'Bebas Neue';font-size:15px;color:var(--gold);letter-spacing:1px}
+.rS1{background:#2D2000;color:#F5C842;border:1px solid #8B6914}
+.rS2{background:#231A00;color:#D4A020;border:1px solid #7A5C10}
+.rS3{background:#1C1600;color:#C09030;border:1px solid #6B5210}
+.rA1{background:#0D1A2E;color:#7EB8F7;border:1px solid #2A4A7A}
+.rA2{background:#0A1525;color:#6AA8E8;border:1px solid #253D6A}
+.rA3{background:#081120;color:#5898D8;border:1px solid #20325A}
+.rB1{background:#0E2018;color:#7DC87A;border:1px solid #2A5A26}
+.rB2{background:#0A1C14;color:#6DB86A;border:1px solid #254822}
+.rB3{background:#081812;color:#5DA85A;border:1px solid #1E3C1C}
+.rC1{background:#1A0A25;color:#C07AF5;border:1px solid #5A2A8A}
+.rC2{background:#150820;color:#B06AE8;border:1px solid #4A2278}
+.rC3{background:#10061C;color:#A05AD8;border:1px solid #3C1C68}
+.rD1{background:#1E0808;color:#E87A7A;border:1px solid #7A2A2A}
+.rD2{background:#180606;color:#D86A6A;border:1px solid #682222}
+.rD3{background:#140404;color:#C85A5A;border:1px solid #581A1A}
+.rE1{background:#1E1E1E;color:#AAAAAA;border:1px solid #444}
+.rE2{background:#191919;color:#999999;border:1px solid #3A3A3A}
+.rE3{background:#141414;color:#888888;border:1px solid #303030}
+.rCREW{background:#111;color:#666;border:1px solid #2A2A2A}
+.rLEADER{background:#1A1025;color:#D8A0F0;border:1px solid #6A2A8A}
+
+/* ── MEMBER REPORT ── */
+.report-wrap{padding:16px;max-width:480px;margin:0 auto}
+.report-hero{text-align:center;padding:20px 0 16px}
+.report-hero-icon{font-size:36px;margin-bottom:8px}
+.report-hero-title{font-family:'Bebas Neue';font-size:28px;letter-spacing:4px;color:var(--green);margin-bottom:4px}
+.report-hero-date{font-size:11px;color:var(--muted);letter-spacing:2px}
+
+.report-member-select{margin-bottom:20px}
+.rms-label{font-size:10px;color:var(--muted);letter-spacing:3px;margin-bottom:6px;display:block}
+.rms-sel{width:100%;background:var(--panel2);border:1px solid #2a2a2a;border-radius:8px;padding:12px 14px;color:var(--white);font-family:'Noto Sans JP';font-size:14px;outline:none;-webkit-appearance:none;cursor:pointer}
+.rms-sel:focus{border-color:var(--green2)}
+
+.mood-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+.mood-card-title{font-size:10px;color:var(--green);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.mood-emojis{display:flex;justify-content:space-between;gap:6px;margin-bottom:8px}
+.mood-btn{flex:1;aspect-ratio:1;border-radius:10px;border:2px solid transparent;background:var(--panel2);font-size:22px;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px}
+.mood-btn span.mood-lbl{font-size:8px;color:var(--muted)}
+.mood-btn.selected{background:rgba(76,175,130,0.15);border-color:var(--green)}
+.mood-btn:hover{transform:scale(1.05)}
+
+.load-track{display:flex;gap:8px;flex-wrap:wrap}
+.load-btn{padding:8px 14px;border-radius:8px;border:1px solid #2a2a2a;background:var(--panel2);color:var(--muted);font-family:'Noto Sans JP';font-size:12px;cursor:pointer;transition:all 0.18s;white-space:nowrap}
+.load-btn.selected-lo{background:rgba(76,175,130,0.15);border-color:var(--green);color:var(--green)}
+.load-btn.selected-mid{background:rgba(224,201,85,0.15);border-color:var(--yellow);color:var(--yellow)}
+.load-btn.selected-hi{background:rgba(224,85,85,0.15);border-color:var(--red);color:var(--red)}
+
+.comment-area{width:100%;background:var(--panel2);border:1px solid #2a2a2a;border-radius:8px;padding:12px 14px;color:var(--white);font-family:'Noto Sans JP';font-size:13px;outline:none;resize:none;min-height:90px;line-height:1.7}
+.comment-area:focus{border-color:var(--green2)}
+.comment-area::placeholder{color:#444}
+
+.submit-btn{width:100%;padding:15px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--green2),var(--green));color:#fff;font-family:'Noto Sans JP';font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:6px;letter-spacing:1px}
+.submit-btn:hover{opacity:0.9;transform:translateY(-1px)}
+.submit-btn:disabled{opacity:0.4;transform:none;cursor:not-allowed}
+
+.submit-done{text-align:center;padding:30px 20px;display:none}
+.submit-done.show{display:block;animation:fIn 0.3s ease}
+.submit-done-icon{font-size:48px;margin-bottom:12px}
+.submit-done-title{font-size:18px;font-weight:700;color:var(--green);margin-bottom:6px}
+.submit-done-sub{font-size:12px;color:var(--muted)}
+
+.history-list{margin-top:20px}
+.history-item{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.history-date{font-size:10px;color:var(--muted);margin-bottom:6px}
+.history-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.history-mood{font-size:18px}
+.history-load{font-size:11px;padding:2px 8px;border-radius:4px;font-weight:700}
+.history-comment{font-size:12px;color:#aaa;margin-top:6px;line-height:1.6}
+
+/* ── ADMIN DASHBOARD ── */
+.admin-wrap{padding:16px}
+.admin-section{margin-bottom:20px}
+.admin-section-title{font-size:10px;color:var(--blue);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+
+/* Alert Banner */
+.alert-banner{background:rgba(224,85,85,0.1);border:1px solid rgba(224,85,85,0.3);border-radius:10px;padding:12px 14px;margin-bottom:14px;display:none}
+.alert-banner.show{display:block;animation:fIn 0.3s ease}
+.alert-banner-title{font-size:11px;color:var(--red);font-weight:700;letter-spacing:2px;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.alert-item{font-size:12px;color:#ccc;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;gap:6px}
+.alert-item:last-child{border-bottom:none}
+.alert-dot{width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0}
+
+/* Member Grid */
+.member-grid{display:flex;flex-direction:column;gap:8px}
+.member-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all 0.15s;position:relative;overflow:hidden;display:flex;align-items:center;gap:12px}
+.member-card:hover{background:var(--panel2)}
+.member-card.alert-card{border-color:rgba(224,85,85,0.5);background:rgba(224,85,85,0.04)}
+.member-card.alert-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red)}
+.member-card.ok-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--green)}
+.member-card.stress-hi{border-color:rgba(224,85,85,0.4);background:rgba(224,85,85,0.03)}
+.member-card.stress-mid{border-color:rgba(224,201,85,0.25)}
+.mc-left{flex-shrink:0;width:44px;text-align:center}
+.mc-avatar{font-size:28px;line-height:1;margin-bottom:2px}
+.mc-avatar-none{font-size:20px;opacity:0.15;line-height:1;margin-bottom:2px}
+.mc-streak-v{font-size:8px;color:var(--gold);font-family:'Bebas Neue';letter-spacing:1px}
+.mc-center{flex:1;min-width:0}
+.mc-name{font-size:14px;font-weight:700;color:var(--white);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-role{font-size:10px;color:var(--muted);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-tags{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-bottom:4px}
+.mc-load{display:inline-block;font-size:9px;padding:2px 7px;border-radius:3px;font-weight:700}
+.mc-ai-badge{font-size:9px;padding:2px 7px;border-radius:3px;font-weight:700}
+.mc-ai-summary{font-size:10px;color:#888;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-no-input-txt{font-size:11px;color:#333;margin-top:2px}
+.mc-right{flex-shrink:0;text-align:right}
+.mc-date{font-size:9px;color:#333;margin-bottom:4px}
+.mc-mood-big{font-size:28px}
+.mc-mood-none{font-size:20px;opacity:0.15}
+
+/* Stats Row */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat-box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.stat-val{font-family:'Bebas Neue';font-size:28px;letter-spacing:1px;line-height:1}
+.stat-lbl{font-size:9px;color:var(--muted);letter-spacing:2px;margin-top:3px}
+.stat-val.sv-green{color:var(--green)}
+.stat-val.sv-yellow{color:var(--yellow)}
+.stat-val.sv-red{color:var(--red)}
+
+/* Chart */
+.chart-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;overflow:hidden}
+.chart-title{font-size:10px;color:var(--blue);letter-spacing:3px;margin-bottom:12px}
+.chart-area{position:relative;height:120px}
+canvas.trend-chart{width:100%!important;height:120px!important}
+
+/* Detail Modal */
+.mbg{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center;padding:16px}
+.mbg.open{display:flex}
+.msh{background:var(--panel);border:1px solid;border-radius:16px 16px 12px 12px;width:100%;max-width:480px;animation:shUp 0.25s cubic-bezier(0.34,1.56,0.64,1);overflow:hidden;max-height:85dvh;overflow-y:auto}
+.msh-patrol{border-color:var(--gold2)}
+.msh-admin{border-color:var(--blue2)}
+@keyframes shUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mhnd{width:36px;height:4px;background:#333;border-radius:2px;margin:10px auto 0}
+.mbody{padding:16px 20px 24px}
+.mey{font-size:9px;letter-spacing:4px;color:var(--gold2);text-transform:uppercase;margin-bottom:5px}
+.mname{font-size:24px;font-weight:900;margin-bottom:2px}
+.mco{font-size:11px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.msal-big{font-family:'Bebas Neue';font-size:50px;color:var(--gold);text-align:center;margin:8px 0 4px;letter-spacing:2px;line-height:1}
+.msal-sub{text-align:center;font-size:10px;color:var(--muted);letter-spacing:3px;margin-bottom:18px}
+.mdiv{height:1px;background:var(--border);margin:10px 0}
+.mrow{display:flex;justify-content:space-between;align-items:center;padding:7px 0}
+.mrow+.mrow{border-top:1px solid var(--border)}
+.mkey{font-size:11px;color:var(--muted)}
+.mval{font-size:12px;font-weight:700;color:var(--white)}
+.mmulti{background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:8px;padding:10px 12px;margin-top:10px}
+.mmulti-lbl{font-size:9px;color:var(--gold2);letter-spacing:2px;margin-bottom:5px}
+.mmulti-it{font-size:11px;color:#aaa;padding:2px 0;display:flex;align-items:center;gap:6px}
+.mcbtn{width:100%;margin-top:14px;padding:12px;background:var(--panel2);border:1px solid #333;border-radius:8px;color:var(--muted);font-family:'Noto Sans JP';font-size:13px;cursor:pointer;transition:all 0.2s}
+.mcbtn:hover{border-color:var(--gold2);color:var(--white)}
+
+/* Admin Member Detail Modal */
+.amd-header{padding:16px 20px 12px;border-bottom:1px solid var(--border)}
+.amd-name{font-size:20px;font-weight:900;margin-bottom:2px}
+.amd-meta{font-size:11px;color:var(--muted)}
+.amd-mood-big{font-size:48px;text-align:center;margin:12px 0 4px}
+.amd-mood-lbl{text-align:center;font-size:11px;color:var(--muted);margin-bottom:12px}
+.amd-history{margin-top:14px}
+.amd-hist-title{font-size:9px;letter-spacing:3px;color:var(--blue);text-transform:uppercase;margin-bottom:8px}
+.amd-hist-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.amd-hist-item:last-child{border-bottom:none}
+.amd-hist-date{font-size:10px;color:var(--muted);width:70px;flex-shrink:0}
+.amd-hist-mood{font-size:18px;width:28px;flex-shrink:0}
+.amd-hist-load{font-size:10px;padding:2px 6px;border-radius:3px;font-weight:700;width:60px;text-align:center;flex-shrink:0}
+.amd-hist-comment{font-size:11px;color:#999;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Guide */
+.gsec{padding:16px}
+.gc{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.gc-hdr{padding:9px 14px;background:var(--panel2);font-size:10px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.grow{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border)}
+.grow:last-child{border-bottom:none}
+.glbl{font-size:13px;color:var(--white)}
+.gval{font-family:'Bebas Neue';font-size:15px;color:var(--gold);letter-spacing:1px}
+.rkg{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:12px}
+.rkc{border-radius:8px;padding:9px 6px;text-align:center}
+.rkc-n{font-family:'Bebas Neue';font-size:18px;letter-spacing:1px}
+.rkc-b{font-size:9px;color:var(--muted);margin-top:2px}
+.atbl{width:100%;border-collapse:collapse;font-size:12px}
+.atbl th{background:var(--panel2);border-bottom:1px solid var(--gold2);padding:7px 10px;text-align:left;font-size:10px;letter-spacing:2px;color:var(--gold);font-weight:500}
+.atbl td{padding:7px 10px;border-bottom:1px solid var(--border);color:#ccc}
+.atbl tr:hover td{background:rgba(201,168,76,0.04)}
+.atbl .nm{color:var(--white);font-weight:500}
+.atbl .sv{font-family:'Bebas Neue';font-size:14px;color:var(--gold);letter-spacing:1px}
+
+#sec-search .slbl{padding:11px 16px 5px;font-size:10px;color:var(--gold2);letter-spacing:3px;text-transform:uppercase}
+.empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:13px}
+.phi{margin:14px 16px;padding:13px 15px;background:var(--panel2);border-left:3px solid var(--gold);border-radius:0 8px 8px 0}
+.phi-l{font-size:9px;color:var(--gold2);letter-spacing:3px;margin-bottom:5px}
+.phi-t{font-size:13px;color:var(--white);line-height:1.7;font-weight:500}
+.hq-note{padding:10px 16px 14px;font-size:11px;color:var(--muted);line-height:1.8;border-bottom:1px solid var(--border)}
+.fab{position:fixed;bottom:24px;right:20px;z-index:200;width:44px;height:44px;border-radius:50%;background:var(--gold2);border:none;color:var(--black);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.5);opacity:0;pointer-events:none;transition:opacity 0.2s}
+.fab.show{opacity:1;pointer-events:all}
+/* AI分析 */
+.ai-analysis{background:rgba(85,145,224,0.08);border:1px solid rgba(85,145,224,0.2);border-radius:10px;padding:12px 14px;margin-top:12px}
+.ai-analysis-title{font-size:9px;color:var(--blue);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.ai-score-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.ai-score{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700}
+.ai-score-stress-lo{background:rgba(76,175,130,0.15);color:var(--green)}
+.ai-score-stress-mid{background:rgba(224,201,85,0.15);color:var(--yellow)}
+.ai-score-stress-hi{background:rgba(224,85,85,0.15);color:var(--red)}
+.ai-score-pos{background:rgba(76,175,130,0.15);color:var(--green)}
+.ai-score-neu{background:rgba(150,150,150,0.15);color:#aaa}
+.ai-score-neg{background:rgba(224,85,85,0.15);color:var(--red)}
+.ai-summary{font-size:12px;color:#ccc;line-height:1.7;margin-top:6px}
+.ai-flag{background:rgba(224,85,85,0.15);border:1px solid rgba(224,85,85,0.3);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--red);margin-top:6px;display:flex;align-items:center;gap:5px}
+.ai-analyzing{font-size:11px;color:var(--blue);animation:pulse 1.5s ease infinite}
+@keyframes pulse{0%,100%{opacity:0.5}50%{opacity:1}}
+.mc-ai-flag{position:absolute;bottom:6px;right:6px;font-size:10px;background:rgba(224,85,85,0.2);color:var(--red);padding:1px 5px;border-radius:3px;font-weight:700}
+@media(min-width:640px){.rkg{grid-template-columns:repeat(6,1fr)}.mr{padding:12px 20px}}
+
+/* mood colors */
+.mood-1{color:#e74c3c}.mood-2{color:#e67e22}.mood-3{color:var(--yellow)}.mood-4{color:#2ecc71}.mood-5{color:#3498db}
+.load-lo{background:rgba(76,175,130,0.15);color:var(--green)}
+.load-mid{background:rgba(224,201,85,0.15);color:var(--yellow)}
+.load-hi{background:rgba(224,85,85,0.15);color:var(--red)}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="sl">OHKA</div><div class="sln"></div>
+  <div class="ss">INTEGRATED MANAGEMENT SYSTEM</div>
+  <div class="ss2">巡回シート + 日報 + メンタルチェック</div>
+</div>
+
+<div id="mode-select">
+  <div class="ms-title">OHKA HD</div>
+  <div class="ms-sub">モードを選択してください</div>
+  <div class="ms-btns">
+    <button class="ms-btn ms-btn-main" onclick="setMode('patrol')">
+      <span class="ms-btn-icon">🏛</span>
+      <span class="ms-btn-label">組織一覧</span>
+      <span class="ms-btn-desc">メンバー一覧・給与・役職確認</span>
+    </button>
+    <button class="ms-btn ms-btn-member" onclick="setMode('member')">
+      <span class="ms-btn-icon">📝</span>
+      <span class="ms-btn-label">日報・メンタルチェック入力</span>
+      <span class="ms-btn-desc">今日の状態を記録する（個人用）</span>
+    </button>
+    <button class="ms-btn ms-btn-admin" onclick="setMode('admin')">
+      <span class="ms-btn-icon">📊</span>
+      <span class="ms-btn-label">管理者ダッシュボード</span>
+      <span class="ms-btn-desc">全メンバーのメンタル状況を確認</span>
+    </button>
+    <button class="ms-btn" style="border-color:#333;color:#555" onclick="injectTestData()">
+      <span class="ms-btn-icon">🧪</span>
+      <span class="ms-btn-label">テストデータ注入</span>
+      <span class="ms-btn-desc">様々なパターンのダミーデータを追加</span>
+    </button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <header>
+    <div class="hdr-top">
+      <span class="hdr-logo">OHKA HD</span>
+      <span class="hdr-title" id="hdr-title">組織一覧</span>
+      <span style="font-size:8px;color:#333;letter-spacing:1px">v3.AI</span>
+      <div class="hdr-right">
+        <span style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid #333;color:#555;cursor:pointer;margin-right:4px" onclick="injectTestData()">🧪TEST</span>
+        <span class="hdr-mode hdr-mode-patrol" id="hdr-mode-badge" onclick="backToModeSelect()">巡回</span>
+      </div>
+    </div>
+    <div class="sw" id="search-bar">
+      <span class="si-icon">🔍</span>
+      <input class="si" type="text" placeholder="名前・役職・部門で検索..." id="si" oninput="doSearch(this.value)">
+    </div>
+  </header>
+
+  <div class="nav" id="main-nav">
+    <!-- patrol tabs -->
+    <div id="nav-patrol" style="display:contents">
+      <button class="nt active" onclick="showTab('hq')">🏛 本部</button>
+      <button class="nt" onclick="showTab('ageha')">🌸 AGEHA</button>
+      <button class="nt" onclick="showTab('kome')">🌾 米坊主</button>
+      <button class="nt" onclick="showTab('miraise')">🏠 ミライズ</button>
+      <button class="nt" onclick="showTab('entertain')">🎭 ENT</button>
+      <button class="nt" onclick="showTab('piyo')">🌴 PIYO</button>
+      <button class="nt" onclick="showTab('comfany')">🍸 comfany</button>
+      <button class="nt" onclick="showTab('guide')">📋 早見表</button>
+    </div>
+    <!-- member tabs -->
+    <div id="nav-member" style="display:none;contents">
+      <button class="nt active-green active" onclick="showMemberTab('input')">✏️ 日報入力</button>
+      <button class="nt" onclick="showMemberTab('history')">📅 履歴</button>
+    </div>
+    <!-- admin tabs -->
+    <div id="nav-admin" style="display:none;contents">
+      <button class="nt active-blue active" onclick="showAdminTab('dashboard')">📊 ダッシュボード</button>
+      <button class="nt" onclick="showAdminTab('trend')">📈 推移</button>
+    </div>
+  </div>
+
+  <div class="content" id="content">
+    <!-- SEARCH -->
+    <div class="sec" id="sec-search">
+      <div class="slbl" id="sc-cnt"></div>
+      <div id="sc-res"></div>
+    </div>
+
+    <!-- PATROL -->
+    <div class="sec active" id="tab-hq">
+      <div class="phi"><div class="phi-l">企業理念</div><div class="phi-t">「商人の道を極め、人格、品格を形成する」</div></div>
+      <div class="hq-note">CEO 中村 恭平 統括。本部付(+¥100,000)・執行部(+¥100,000)・組織委員(+¥30,000)は全社横断で役席手当に加算。</div>
+      <div id="hq-list"></div>
+    </div>
+    <div class="sec" id="tab-ageha"><div id="ageha-list"></div></div>
+    <div class="sec" id="tab-kome"><div id="kome-list"></div></div>
+    <div class="sec" id="tab-miraise"><div id="miraise-list"></div></div>
+    <div class="sec" id="tab-entertain"><div id="entertain-list"></div></div>
+    <div class="sec" id="tab-piyo"><div id="piyo-list"></div></div>
+    <div class="sec" id="tab-comfany"><div id="comfany-list"></div></div>
+    <div class="sec" id="tab-guide">
+      <div class="gsec">
+        <div class="gc"><div class="gc-hdr">役席手当</div><div id="role-g"></div></div>
+        <div class="gc">
+          <div class="gc-hdr">役職手当（区分）</div>
+          <div class="grow"><span class="glbl">本部付（本）</span><span class="gval">¥100,000</span></div>
+          <div class="grow"><span class="glbl">執行部（執）</span><span class="gval">¥100,000</span></div>
+          <div class="grow"><span class="glbl">組織委員（組）</span><span class="gval">¥30,000</span></div>
+        </div>
+        <div class="gc"><div class="gc-hdr">階級 基本給</div><div class="rkg" id="rank-g"></div></div>
+        <div class="gc"><div class="gc-hdr">実額設定メンバー一覧</div><div style="overflow-x:auto;padding:4px 0"><table class="atbl" id="actual-t"></table></div></div>
+        <div class="gc"><div class="gc-hdr">区分凡例</div>
+          <div style="padding:12px 14px">
+            <div style="padding:5px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between"><span><span class="badge b-hon" style="margin-right:6px">本</span>本部付</span><span style="font-size:11px;color:var(--muted)">+¥100,000</span></div>
+            <div style="padding:5px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between"><span><span class="badge b-jik" style="margin-right:6px">執</span>執行部</span><span style="font-size:11px;color:var(--muted)">+¥100,000</span></div>
+            <div style="padding:5px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between"><span><span class="badge b-sos" style="margin-right:6px">組</span>組織委員</span><span style="font-size:11px;color:var(--muted)">+¥30,000</span></div>
+            <div style="padding:5px 0;display:flex;justify-content:space-between"><span><span class="badge b-ken" style="margin-right:6px">兼</span>兼務</span><span style="font-size:11px;color:var(--muted)">複数社所属</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBER INPUT -->
+    <div class="sec" id="tab-member-input">
+      <div class="report-wrap">
+        <div class="report-hero">
+          <div class="report-hero-icon">🌿</div>
+          <div class="report-hero-title">DAILY CHECK</div>
+          <div class="report-hero-date" id="report-date-display"></div>
+        </div>
+
+        <div id="report-form">
+          <div class="report-member-select">
+            <span class="rms-label">あなたの名前</span>
+            <select class="rms-sel" id="member-name-sel" onchange="checkTodayReport()">
+              <option value="">-- 名前を選択 --</option>
+            </select>
+          </div>
+
+          <div id="already-submitted" style="display:none;text-align:center;padding:20px;background:var(--panel);border-radius:10px;border:1px solid var(--border);margin-bottom:14px">
+            <div style="font-size:28px;margin-bottom:8px">✅</div>
+            <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:4px">本日の記録完了</div>
+            <div style="font-size:11px;color:var(--muted)">今日はすでに入力済みです</div>
+          </div>
+
+          <div id="form-fields">
+            <div class="mood-card">
+              <div class="mood-card-title">😊 今日の気分</div>
+              <div class="mood-emojis">
+                <button class="mood-btn" data-mood="1" onclick="selectMood(1)">😞<span class="mood-lbl">最悪</span></button>
+                <button class="mood-btn" data-mood="2" onclick="selectMood(2)">😕<span class="mood-lbl">悪い</span></button>
+                <button class="mood-btn" data-mood="3" onclick="selectMood(3)">😐<span class="mood-lbl">普通</span></button>
+                <button class="mood-btn" data-mood="4" onclick="selectMood(4)">😊<span class="mood-lbl">良い</span></button>
+                <button class="mood-btn" data-mood="5" onclick="selectMood(5)">😄<span class="mood-lbl">最高</span></button>
+              </div>
+            </div>
+
+            <div class="mood-card">
+              <div class="mood-card-title">⚡ 仕事の負荷感</div>
+              <div class="load-track">
+                <button class="load-btn" data-load="lo" onclick="selectLoad('lo')">😌 余裕あり</button>
+                <button class="load-btn" data-load="mid" onclick="selectLoad('mid')">🙂 ちょうど良い</button>
+                <button class="load-btn" data-load="hi" onclick="selectLoad('hi')">😤 忙しい</button>
+                <button class="load-btn" data-load="over" onclick="selectLoad('over')">🔥 限界</button>
+              </div>
+            </div>
+
+            <div class="mood-card">
+              <div class="mood-card-title">💬 コメント（任意）</div>
+              <textarea class="comment-area" id="report-comment" placeholder="今日の出来事や気になることがあれば..."></textarea>
+            </div>
+
+            <button class="submit-btn" id="submit-btn" onclick="submitReport()">記録する</button>
+          </div>
+        </div>
+
+        <div class="submit-done" id="submit-done">
+          <div class="submit-done-icon">🎉</div>
+          <div class="submit-done-title">記録完了！</div>
+          <div class="submit-done-sub">お疲れ様でした。今日も一日頑張りましたね。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBER HISTORY -->
+    <div class="sec" id="tab-member-history">
+      <div class="report-wrap">
+        <div style="margin-bottom:14px">
+          <span class="rms-label" style="display:block;font-size:10px;color:var(--muted);letter-spacing:3px;margin-bottom:6px">名前を選択</span>
+          <select class="rms-sel" id="history-name-sel" onchange="renderMyHistory()">
+            <option value="">-- 名前を選択 --</option>
+          </select>
+        </div>
+        <div id="my-history-list"></div>
+      </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+    <div class="sec" id="tab-admin-dashboard">
+      <div class="admin-wrap">
+        <div class="alert-banner" id="alert-banner">
+          <div class="alert-banner-title">⚠️ 要注意メンバー</div>
+          <div id="alert-list"></div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-val sv-green" id="stat-submitted">-</div><div class="stat-lbl">本日提出</div></div>
+          <div class="stat-box"><div class="stat-val sv-yellow" id="stat-avg">-</div><div class="stat-lbl">平均気分</div></div>
+          <div class="stat-box"><div class="stat-val sv-red" id="stat-alert">-</div><div class="stat-lbl">要注意</div></div>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-title">👥 メンバー状況</div>
+          <div class="member-grid" id="member-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN TREND -->
+    <div class="sec" id="tab-admin-trend">
+      <div class="admin-wrap">
+        <div style="margin-bottom:14px">
+          <span style="display:block;font-size:10px;color:var(--muted);letter-spacing:3px;margin-bottom:6px">メンバーを選択</span>
+          <select class="rms-sel" id="trend-name-sel" onchange="renderTrendChart()">
+            <option value="">-- 全体平均 --</option>
+          </select>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">気分スコア 推移（直近14日）</div>
+          <div class="chart-area">
+            <canvas id="trend-canvas"></canvas>
+          </div>
+        </div>
+        <div class="chart-card" style="margin-top:12px">
+          <div class="chart-title">負荷感 推移</div>
+          <div class="chart-area">
+            <canvas id="load-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Patrol Member Modal -->
+<div class="mbg" id="modal-patrol" onclick="closePatrolModal(event)">
+  <div class="msh msh-patrol"><div class="mhnd"></div><div class="mbody" id="mbody-patrol"></div></div>
+</div>
+
+<!-- Admin Member Detail Modal -->
+<div class="mbg" id="modal-admin" onclick="closeAdminModal(event)">
+  <div class="msh msh-admin"><div class="mhnd"></div><div id="mbody-admin" class="mbody"></div></div>
+</div>
+
+<button class="fab" id="fab" onclick="goTop()">↑</button>
+
+<script>
+// ================================================================
+// CONSTANTS
+// ================================================================
+const RA={'会長':0,'社長':0,'執行役':0,'代表取締役':0,'部長':300000,'部長代理':200000,'次長':150000,'次長代理':100000,'課長':80000,'課長代理':60000,'係長':50000,'係長代理':30000,'主任':20000,'主任補佐':10000,'副店長':15000,'担当':5000,'担当補佐':2000,'リーダー':10000,'チャレンジャー':5000,'Crew':0,'メンバー':0};
+const KA={honbu:100000,jikkoubu:100000,soshiki:30000};
+const RB={S1:1000000,S2:700000,S3:500000,A1:460000,A2:440000,A3:420000,B1:380000,B2:360000,B3:340000,C1:320000,C2:300000,C3:280000,D1:260000,D2:240000,D3:220000,E1:200000,E2:180000,E3:160000,CREW:0,LEADER:0};
+const ROLE_ORD=['会長','社長','執行役','代表取締役','部長','部長代理','次長','次長代理','課長','課長代理','係長','係長代理','主任','主任補佐','副店長','リーダー','チャレンジャー','担当','担当補佐','Crew','メンバー'];
+const NOTES={honbu:{s:'本',c:'b-hon',f:'本部付'},jikkoubu:{s:'執',c:'b-jik',f:'執行部'},soshiki:{s:'組',c:'b-sos',f:'組織委員'}};
+const CO_META={hq:{name:'OHKA HOLDINGS 本部',short:'本部',color:'#8B6914'},ageha:{name:'AGEHA Group',short:'AGEHA',color:'#8B1010'},kome:{name:'株式会社 米坊主',short:'米坊主',color:'#1A3A5C'},miraise:{name:'ミライズエージェント',short:'ミライズ',color:'#1A4A2A'},entertain:{name:'AGEHA ENTERTAINMENT',short:'ENT',color:'#4A1A6A'},piyo:{name:'PIYO RESORT inc',short:'PIYO',color:'#7A4A00'},comfany:{name:'株式会社 comfany',short:'comfany',color:'#1A3A6A'}};
+const MOOD_EMOJI=['','😞','😕','😐','😊','😄'];
+const MOOD_LABEL=['','最悪','悪い','普通','良い','最高'];
+const LOAD_LABEL={lo:'余裕あり',mid:'ちょうど良い',hi:'忙しい',over:'限界'};
+const LOAD_CLASS={lo:'load-lo',mid:'load-lo',hi:'load-mid',over:'load-hi'};
+
+const MEMBERS=[
+  {id:'suzuki_tae',name:'鈴木 妙',cid:'hq',dept:'管理職',role:'部長代理',note:'honbu',rank:'E2'},
+  {id:'kobayashi_c',name:'小林 千恵子',cid:'hq',dept:'管理職',role:'部長代理',note:'honbu',rank:'E1'},
+  {id:'sato_t',name:'佐藤 貴臣',cid:'hq',dept:'管理職',role:'次長',note:'jikkoubu',rank:'B3',salary:480000,concurrent:[{cid:'kome',role:'次長',dept:'米坊主'},{cid:'entertain',role:'次長',dept:'BABYCROWN'}]},
+  {id:'suzuki_tak',name:'鈴木 貴大',cid:'hq',dept:'管理職',role:'次長代理',note:'jikkoubu',rank:'B3',concurrent:[{cid:'ageha',role:'次長代理',dept:'Club AGEHA'}]},
+  {id:'takeda_s',name:'武田 将一',cid:'hq',dept:'管理職',role:'次長代理',note:'soshiki',rank:'B1',salary:390000,concurrent:[{cid:'entertain',role:'次長代理',dept:'ノクターヴィス'},{cid:'piyo',role:'次長代理',dept:'PIYO RESORT'}]},
+  {id:'sasaki_y',name:'佐々木 悠太',cid:'hq',dept:'管理職',role:'次長代理',note:null,rank:'C2',isNew:true},
+  {id:'misaki_m',name:'美咲まい',cid:'hq',dept:'管理職',role:'課長代理',note:null,rank:'C2',concurrent:[{cid:'ageha',role:'課長代理',dept:'ULYSSES Lounge'}]},
+  {id:'sasao_s',name:'笹尾 修三',cid:'hq',dept:'係長・係長代理',role:'係長',note:null,rank:'B3',concurrent:[{cid:'ageha',role:'係長',dept:'英魔女 club 琥珀'},{cid:'kome',role:'係長',dept:'米坊主'}]},
+  {id:'nakagome_s',name:'中込 眞一郎',cid:'hq',dept:'係長・係長代理',role:'係長',note:null,rank:'B2',concurrent:[{cid:'miraise',role:'係長',dept:'ミライズ'},{cid:'piyo',role:'係長',dept:'PIYO RESORT'}]},
+  {id:'yamashita_y',name:'山下 良志子',cid:'hq',dept:'係長・係長代理',role:'係長',note:null,rank:'D3',salary:230000,concurrent:[{cid:'ageha',role:'係長',dept:'Club AGEHA'}]},
+  {id:'tsuda_m',name:'津田 恵美',cid:'hq',dept:'係長・係長代理',role:'係長代理',note:'honbu',rank:'E3',salary:176500},
+  {id:'sakagami_s',name:'阪上 慎二',cid:'hq',dept:'主任',role:'主任',note:null,rank:'B1',salary:381800,concurrent:[{cid:'ageha',role:'主任',dept:'英魔女 club 琥珀'},{cid:'miraise',role:'主任',dept:'ミライズ'}]},
+  {id:'takahashi_a',name:'高橋 敦郎',cid:'hq',dept:'主任',role:'主任',note:null,rank:'C3',salary:299000,concurrent:[{cid:'ageha',role:'主任',dept:'英魔女 club 琥珀'},{cid:'kome',role:'主任',dept:'米坊主'}]},
+  {id:'endo_k',name:'遠藤 和成',cid:'hq',dept:'主任',role:'主任',note:null,rank:'C3',salary:299100,concurrent:[{cid:'ageha',role:'主任',dept:'英魔女 club 琥珀'}]},
+  {id:'kishino_n',name:'岸野 直樹',cid:'hq',dept:'主任',role:'主任',note:null,rank:'C1'},
+  {id:'nakamura_y',name:'中村 悠太',cid:'hq',dept:'主任',role:'主任',note:null,rank:'C1',concurrent:[{cid:'kome',role:'主任',dept:'米坊主'}]},
+  {id:'yamashita_a',name:'山下 あかり',cid:'hq',dept:'主任',role:'主任',note:null,rank:'C3',concurrent:[{cid:'ageha',role:'主任',dept:'Club AGEHA'}]},
+  {id:'ishii_k',name:'石井 海翔',cid:'hq',dept:'主任',role:'主任',note:null,rank:'C2',concurrent:[{cid:'ageha',role:'主任',dept:'英魔女 club 琥珀'}]},
+  {id:'ishii_s',name:'石井空',cid:'hq',dept:'主任',role:'主任',note:null,rank:'C2',concurrent:[{cid:'ageha',role:'主任',dept:'英魔女 club 琥珀'}]},
+  {id:'hiramuki_k',name:'平向 健',cid:'hq',dept:'主任補佐',role:'主任補佐',note:null,rank:'B1',salary:385000,concurrent:[{cid:'ageha',role:'主任補佐',dept:'英魔女 club 琥珀'}]},
+  {id:'kashima_h',name:'鹿間 英典',cid:'hq',dept:'主任補佐',role:'主任補佐',note:null,rank:'C2',concurrent:[{cid:'ageha',role:'主任補佐',dept:'英魔女 club 琥珀'}]},
+  {id:'saito_m',name:'斎藤 誠也',cid:'hq',dept:'主任補佐',role:'主任補佐',note:null,rank:'C2',concurrent:[{cid:'ageha',role:'主任補佐',dept:'英魔女 club 琥珀'}]},
+  {id:'mitsuhashi_t',name:'三橋 努',cid:'hq',dept:'主任補佐',role:'主任補佐',note:null,rank:'C2',concurrent:[{cid:'ageha',role:'主任補佐',dept:'英魔女 club 琥珀'}]},
+  {id:'murata_n',name:'村田 希',cid:'hq',dept:'担当',role:'担当',note:null,rank:'C3',concurrent:[{cid:'ageha',role:'担当',dept:'英魔女 club 琥珀'}]},
+  {id:'mikami_t',name:'三上 智也',cid:'hq',dept:'担当',role:'担当',note:null,rank:'C3',concurrent:[{cid:'ageha',role:'担当',dept:'英魔女 club 琥珀'}]},
+  {id:'komuro_h',name:'小室 晴哉',cid:'hq',dept:'担当',role:'担当',note:null,rank:'C3'},
+  {id:'sano_m',name:'佐野 美奈子',cid:'hq',dept:'担当',role:'担当',note:null,rank:'C3',concurrent:[{cid:'entertain',role:'担当',dept:'ノクターヴィス'}]},
+  {id:'nakazawa_c',name:'中沢 智香',cid:'hq',dept:'担当',role:'担当',note:null,rank:'C3',concurrent:[{cid:'miraise',role:'担当',dept:'ミライズ'}]},
+  {id:'hasegawa_t',name:'長谷川登詩子',cid:'hq',dept:'担当',role:'担当',note:null,rank:'C3'},
+  {id:'shibano_m',name:'柴野 美沙',cid:'hq',dept:'担当',role:'担当',note:null,rank:'C3'},
+  {id:'nakamura_o',name:'中村雄大',cid:'hq',dept:'担当',role:'担当',note:null,rank:'C3',concurrent:[{cid:'ageha',role:'担当',dept:'ULYSSES Lounge'}]},
+  {id:'masuyama_s',name:'増山 颯太',cid:'hq',dept:'担当補佐',role:'担当補佐',note:null,rank:'CREW',concurrent:[{cid:'ageha',role:'担当補佐',dept:'英魔女 club 琥珀'}]},
+  {id:'miyazaki_h',name:'宮崎 彪我',cid:'hq',dept:'担当補佐',role:'担当補佐',note:null,rank:'CREW',concurrent:[{cid:'ageha',role:'担当補佐',dept:'英魔女 club 琥珀'}]},
+  {id:'murata_t',name:'村田永遠',cid:'hq',dept:'担当補佐',role:'担当補佐',note:null,rank:'CREW',concurrent:[{cid:'ageha',role:'担当補佐',dept:'英魔女 club 琥珀'}]},
+  {id:'sato_rin',name:'佐藤 凜',cid:'hq',dept:'担当補佐',role:'担当補佐',note:null,rank:'CREW',concurrent:[{cid:'ageha',role:'担当補佐',dept:'英魔女 club 琥珀'}]},
+  {id:'yoshida_h',name:'吉田秀斗',cid:'hq',dept:'Crew',role:'Crew',note:null,rank:'CREW'},
+  {id:'onizawa_s',name:'鬼澤 柊哉',cid:'hq',dept:'Crew',role:'Crew',note:null,rank:'CREW'},
+  {id:'sugimoto_y',name:'杉本 勇斗',cid:'hq',dept:'Crew',role:'Crew',note:null,rank:'CREW'},
+  {id:'onishi_a',name:'大西 敦巳',cid:'hq',dept:'Crew',role:'Crew',note:null,rank:'CREW'},
+  {id:'sato_jo',name:'佐藤 丈一郎',cid:'ageha',dept:'ULYSSES Lounge',role:'係長代理',note:null,rank:'D1',salary:270000},
+  {id:'inogari_h',name:'猪狩 晴輝',cid:'ageha',dept:'英魔女 club 琥珀',role:'主任補佐',note:null,rank:'C2'},
+  {id:'otsuka_m',name:'大塚碧斗',cid:'ageha',dept:'英魔女 club 琥珀',role:'Crew',note:null,rank:'CREW'},
+  {id:'goda_h',name:'五田秀斗',cid:'ageha',dept:'英魔女 club 琥珀',role:'Crew',note:null,rank:'CREW'},
+  {id:'kaisawa_m',name:'海澤将哉',cid:'ageha',dept:'英魔女 club 琥珀',role:'Crew',note:null,rank:'CREW'},
+  {id:'nakayama_m',name:'中山美樹',cid:'ageha',dept:'英魔女 club 琥珀',role:'Crew',note:null,rank:'CREW'},
+  {id:'nakamura_n',name:'中村 倣木',cid:'miraise',dept:'ミライズ',role:'係長代理',note:null,rank:'C2'},
+  {id:'oyama_r',name:'大山亮祐',cid:'entertain',dept:'9.Entertainment',role:'代表取締役',note:null,rank:'S3'},
+  {id:'suzuki_t_ent',name:'鈴木のT',cid:'entertain',dept:'9.Entertainment',role:'次長',note:null,rank:'B3'},
+  {id:'goto_k',name:'後藤カルウ',cid:'entertain',dept:'9.Entertainment',role:'担当',note:null,rank:'C3'},
+  {id:'rarara',name:'ら〜ら〜',cid:'entertain',dept:'&media',role:'代表取締役',note:null,rank:'S3',concurrent:[{cid:'entertain',role:'担当',dept:'BABYCROWN'}]},
+  {id:'conee',name:'conee',cid:'entertain',dept:'&media',role:'メンバー',note:null,rank:'CREW'},
+  {id:'yukahyo',name:'結表',cid:'entertain',dept:'&media',role:'メンバー',note:null,rank:'CREW'},
+  {id:'rin_ent',name:'凜',cid:'entertain',dept:'&media',role:'メンバー',note:null,rank:'CREW'},
+  {id:'ponyuri',name:'ぽんゆり',cid:'entertain',dept:'&media',role:'メンバー',note:null,rank:'CREW'},
+  {id:'mochimochi',name:'もちもち',cid:'entertain',dept:'&media',role:'メンバー',note:null,rank:'CREW'},
+  {id:'takeda_n',name:'武田 夏美',cid:'entertain',dept:'ノクターヴィス',role:'担当',note:null,rank:'C3'},
+  {id:'arai_y',name:'荒井 優馬',cid:'piyo',dept:'PIYO RESORT',role:'担当',note:null,rank:'C3'},
+  {id:'oyama_k',name:'大山弘祐',cid:'comfany',dept:'Bar48k',role:'代表取締役',note:null,rank:'S3'},
+  {id:'moppie',name:'もっぴー',cid:'comfany',dept:'Bar48k',role:'副店長',note:null,rank:'LEADER',concurrent:[{cid:'comfany',role:'副店長',dept:'ALL IN ONE'}]},
+  {id:'kairi',name:'海莉',cid:'comfany',dept:'Bar48k',role:'リーダー',note:null,rank:'LEADER'},
+  {id:'tomokun',name:'ともくん',cid:'comfany',dept:'Bar48k',role:'リーダー',note:null,rank:'LEADER'},
+  {id:'egiki',name:'絵木',cid:'comfany',dept:'Bar48k',role:'リーダー',note:null,rank:'LEADER'},
+  {id:'kanta',name:'かんた',cid:'comfany',dept:'Bar48k',role:'チャレンジャー',note:null,rank:'LEADER'},
+  {id:'reo',name:'REO',cid:'comfany',dept:'Bar48k',role:'リーダー',note:null,rank:'LEADER'},
+  {id:'sano_b',name:'さの',cid:'comfany',dept:'Bar48k',role:'メンバー',note:null,rank:'CREW'},
+  {id:'riko',name:'りこ',cid:'comfany',dept:'Bar48k',role:'メンバー',note:null,rank:'CREW'},
+  {id:'yuuki',name:'ゆうき',cid:'comfany',dept:'Bar48k',role:'メンバー',note:null,rank:'CREW'},
+  {id:'sae',name:'さえ',cid:'comfany',dept:'Bar48k',role:'メンバー',note:null,rank:'CREW'},
+  {id:'ami',name:'あみ',cid:'comfany',dept:'Bar48k',role:'メンバー',note:null,rank:'CREW'},
+  {id:'yuira',name:'ゆいら',cid:'comfany',dept:'Bar48k',role:'メンバー',note:null,rank:'CREW'},
+  {id:'daichi',name:'だいち',cid:'comfany',dept:'Bar48k',role:'メンバー',note:null,rank:'CREW'},
+  {id:'ayuchan',name:'あゆちゃん',cid:'comfany',dept:'ALL IN ONE',role:'主任',note:null,rank:'C3'},
+];
+
+// ================================================================
+// CONFIG
+// ================================================================
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyQlixG1qjT2CdvDi-TgHUC5gF9OZxreUqB66VyD5qIxKA5iBkPWulkw9GKxD60zpbN1w/exec";
+
+// ================================================================
+// AI メンタル分析 (Claude API)
+// ================================================================
+async function analyzeComment(comment, mood, load) {
+  if (!comment || comment.trim().length < 5) {
+    return { stress: 'unknown', emotion: 'unknown', summary: 'コメントなし', flag: false, flagReason: '' };
+  }
+  const moodLabel = ['', '最悪', '悪い', '普通', '良い', '最高'][mood] || '不明';
+  const loadLabel = { lo: '余裕あり', mid: 'ちょうど良い', hi: '忙しい', over: '限界' }[load] || '不明';
+  const prompt = `あなたはメンタルヘルスの専門家です。以下のスタッフの日報コメントを分析してください。
+
+気分スコア: ${mood}/5（${moodLabel}）
+仕事の負荷感: ${loadLabel}
+コメント: "${comment}"
+
+以下のJSON形式のみで返答してください（説明不要）:
+{
+  "stress": "lo" または "mid" または "hi",
+  "emotion": "pos" または "neu" または "neg",
+  "summary": "管理者向けの一言サマリー（20字以内）",
+  "flag": true または false,
+  "flagReason": "要注意の場合の理由（flagがfalseなら空文字）"
+}
+
+判断基準:
+- stress hi: 疲弊・燃え尽き・追い詰め・消えたい・辞めたいなどの表現
+- flag true: 深刻なストレス・孤立感・自己否定・体調不良の継続を示す表現
+- emotionはコメント全体のトーンで判断`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    return JSON.parse(clean);
+  } catch (e) {
+    console.warn('AI分析エラー', e);
+    return { stress: 'unknown', emotion: 'unknown', summary: '分析失敗', flag: false, flagReason: '' };
+  }
+}
+
+function aiStressLabel(s) {
+  return { lo: '🟢 ストレス低', mid: '🟡 ストレス中', hi: '🔴 ストレス高', unknown: '⚪ 不明' }[s] || '⚪ 不明';
+}
+function aiStressClass(s) {
+  return { lo: 'ai-score-stress-lo', mid: 'ai-score-stress-mid', hi: 'ai-score-stress-hi', unknown: 'ai-score-neu' }[s] || 'ai-score-neu';
+}
+function aiEmotionLabel(e) {
+  return { pos: '😊 ポジティブ', neu: '😐 ニュートラル', neg: '😔 ネガティブ', unknown: '❓ 不明' }[e] || '❓ 不明';
+}
+function aiEmotionClass(e) {
+  return { pos: 'ai-score-pos', neu: 'ai-score-neu', neg: 'ai-score-neg', unknown: 'ai-score-neu' }[e] || 'ai-score-neu';
+}
+
+// ================================================================
+// DATA STORAGE (Notion経由 + localStorageキャッシュ)
+// ================================================================
+function getTodayStr(){return new Date().toISOString().slice(0,10)}
+function getDisplayDate(){const d=new Date();return`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`}
+
+// キャッシュ管理
+function getCachedReports(){try{return JSON.parse(localStorage.getItem('ohka_reports_cache')||'[]')}catch{return[]}}
+function setCachedReports(data){localStorage.setItem('ohka_reports_cache',JSON.stringify(data));localStorage.setItem('ohka_cache_ts',Date.now())}
+function isCacheValid(){const ts=localStorage.getItem('ohka_cache_ts');return ts&&(Date.now()-Number(ts))<5*60*1000} // 5分キャッシュ
+
+// Notionからデータ取得
+async function fetchReports(forceRefresh=false){
+  if(TEST_MODE) return getCachedReports(); // テストモード中はキャッシュのみ使用
+  if(!forceRefresh && isCacheValid()) return getCachedReports();
+  try{
+    const res=await fetch(GAS_URL,{method:'GET'});
+    const json=await res.json();
+    if(json.ok){
+      const data=json.data.map(r=>({...r,ts:r.timestamp}));
+      setCachedReports(data);
+      return data;
+    }
+  }catch(e){console.warn('Notion取得エラー、キャッシュ使用',e)}
+  return getCachedReports();
+}
+
+// Notionにデータ保存
+async function saveReport(report){
+  const m=MEMBERS.find(x=>x.id===report.memberId);
+  const payload={...report,memberName:m?m.name:'不明',timestamp:report.ts||Date.now()};
+
+  // 楽観的UI: まずキャッシュに追加
+  const cached=getCachedReports();
+  cached.unshift({...payload,ts:payload.timestamp});
+  setCachedReports(cached);
+
+  // GAS経由でNotionに送信
+  try{
+    await fetch(GAS_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify(payload)
+    });
+  }catch(e){
+    console.warn('Notion保存エラー（ローカルには保存済み）',e);
+  }
+}
+
+// 後方互換: 同期的にキャッシュから取得
+function getReports(){return getCachedReports()}
+
+// ================================================================
+// MODE
+// ================================================================
+let currentMode='patrol';
+let selectedMood=null;
+let selectedLoad=null;
+const ADMIN_PW='ohkaohka';
+
+function backToModeSelect(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('mode-select').classList.add('show');
+}
+
+function setMode(mode){
+  if(mode==='patrol'||mode==='admin'){
+    const pw=prompt('管理者パスワードを入力してください');
+    if(pw===null) return;
+    if(pw!==ADMIN_PW){alert('パスワードが違います');return;}
+  }
+  currentMode=mode;
+  document.getElementById('mode-select').classList.remove('show');
+  document.getElementById('app').style.display='flex';
+
+  // Hide all navs
+  document.getElementById('nav-patrol').style.display='none';
+  document.getElementById('nav-member').style.display='none';
+  document.getElementById('nav-admin').style.display='none';
+
+  const badge=document.getElementById('hdr-mode-badge');
+  const searchBar=document.getElementById('search-bar');
+  const title=document.getElementById('hdr-title');
+
+  // Hide all sections
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+
+  if(mode==='patrol'){
+    document.getElementById('nav-patrol').style.display='contents';
+    badge.className='hdr-mode hdr-mode-patrol';badge.textContent='巡回';
+    title.textContent='組織一覧';
+    searchBar.style.display='block';
+    document.getElementById('tab-hq').classList.add('active');
+  } else if(mode==='member'){
+    document.getElementById('nav-member').style.display='contents';
+    badge.className='hdr-mode hdr-mode-member';badge.textContent='日報';
+    title.textContent='日報・メンタルチェック';
+    searchBar.style.display='none';
+    document.getElementById('tab-member-input').classList.add('active');
+    initMemberMode();
+  } else if(mode==='admin'){
+    document.getElementById('nav-admin').style.display='contents';
+    badge.className='hdr-mode hdr-mode-admin';badge.textContent='管理';
+    title.textContent='管理者ダッシュボード';
+    searchBar.style.display='none';
+    document.getElementById('tab-admin-dashboard').classList.add('active');
+    renderAdminDashboard();
+  }
+}
+
+// ================================================================
+// MEMBER MODE
+// ================================================================
+function initMemberMode(){
+  document.getElementById('report-date-display').textContent=getDisplayDate();
+  const sel=document.getElementById('member-name-sel');
+  const sel2=document.getElementById('history-name-sel');
+  const selTrend=document.getElementById('trend-name-sel');
+  // populate selects
+  [sel,sel2].forEach(s=>{
+    s.innerHTML='<option value="">-- 名前を選択 --</option>';
+    MEMBERS.sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(m=>{
+      s.innerHTML+=`<option value="${m.id}">${m.name}（${CO_META[m.cid].short}）</option>`;
+    });
+  });
+  selTrend.innerHTML='<option value="">-- 全体平均 --</option>';
+  MEMBERS.sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(m=>{
+    selTrend.innerHTML+=`<option value="${m.id}">${m.name}</option>`;
+  });
+  selectedMood=null;selectedLoad=null;
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('.load-btn').forEach(b=>b.classList.remove('selected-lo','selected-mid','selected-hi'));
+  document.getElementById('report-comment').value='';
+  document.getElementById('submit-done').classList.remove('show');
+  document.getElementById('already-submitted').style.display='none';
+  document.getElementById('form-fields').style.display='block';
+}
+
+function selectMood(v){
+  selectedMood=v;
+  document.querySelectorAll('.mood-btn').forEach(b=>{
+    b.classList.toggle('selected',parseInt(b.dataset.mood)===v);
+  });
+}
+function selectLoad(v){
+  selectedLoad=v;
+  document.querySelectorAll('.load-btn').forEach(b=>{
+    b.classList.remove('selected-lo','selected-mid','selected-hi');
+  });
+  const btn=document.querySelector(`.load-btn[data-load="${v}"]`);
+  if(btn){
+    const cls=v==='lo'?'selected-lo':v==='mid'?'selected-lo':v==='hi'?'selected-mid':'selected-hi';
+    btn.classList.add(cls);
+  }
+}
+
+async function checkTodayReport(){
+  const id=document.getElementById('member-name-sel').value;
+  if(!id)return;
+  const today=getTodayStr();
+  const reports=await fetchReports();
+  const done=reports.find(r=>r.memberId===id&&r.date===today);
+  document.getElementById('already-submitted').style.display=done?'block':'none';
+  document.getElementById('form-fields').style.display=done?'none':'block';
+}
+
+async function submitReport(){
+  const id=document.getElementById('member-name-sel').value;
+  if(!id){alert('名前を選択してください');return}
+  if(!selectedMood){alert('気分を選択してください');return}
+  if(!selectedLoad){alert('負荷感を選択してください');return}
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true;btn.textContent='🤖 AI分析中...';
+  const comment=document.getElementById('report-comment').value.trim();
+  // AI分析実行
+  const ai=await analyzeComment(comment,selectedMood,selectedLoad);
+  const report={memberId:id,date:getTodayStr(),ts:Date.now(),mood:selectedMood,load:selectedLoad,comment,aiStress:ai.stress,aiEmotion:ai.emotion,aiSummary:ai.summary,aiFlag:ai.flag,aiFlagReason:ai.flagReason};
+  btn.textContent='送信中...';
+  await saveReport(report);
+  document.getElementById('form-fields').style.display='none';
+  document.getElementById('submit-done').classList.add('show');
+  btn.disabled=false;btn.textContent='記録する';
+}
+
+function showMemberTab(t){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('#nav-member .nt').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-member-'+t).classList.add('active');
+  event.target.classList.add('active');
+  if(t==='history')renderMyHistory();
+}
+
+async function renderMyHistory(){
+  const id=document.getElementById('history-name-sel').value;
+  const el=document.getElementById('my-history-list');
+  if(!id){el.innerHTML='<div class="empty">名前を選択してください</div>';return}
+  el.innerHTML='<div class="empty">📡 読み込み中...</div>';
+  const allReports=await fetchReports();
+  const reports=allReports.filter(r=>r.memberId===id).sort((a,b)=>b.ts-a.ts).slice(0,30);
+  if(!reports.length){el.innerHTML='<div class="empty">記録がまだありません</div>';return}
+  el.innerHTML=reports.map(r=>`
+    <div class="history-item">
+      <div class="history-date">${r.date}</div>
+      <div class="history-meta">
+        <span class="history-mood">${MOOD_EMOJI[r.mood]}</span>
+        <span style="font-size:12px;color:#ccc">${MOOD_LABEL[r.mood]}</span>
+        <span class="history-load ${LOAD_CLASS[r.load]}">${LOAD_LABEL[r.load]}</span>
+      </div>
+      ${r.comment?`<div class="history-comment">💬 ${r.comment}</div>`:''}
+    </div>`).join('');
+}
+
+// ================================================================
+// ADMIN DASHBOARD
+// ================================================================
+async function renderAdminDashboard(){
+  // ローディング表示
+  document.getElementById('member-grid').innerHTML='<div class="empty" style="grid-column:1/-1">📡 Notionからデータ取得中...</div>';
+  const reports=await fetchReports(true);
+  const today=getTodayStr();
+  const todayReports=reports.filter(r=>r.date===today);
+
+  // Stats
+  document.getElementById('stat-submitted').textContent=todayReports.length;
+  const avgMood=todayReports.length?
+    (todayReports.reduce((s,r)=>s+r.mood,0)/todayReports.length).toFixed(1):'-';
+  document.getElementById('stat-avg').textContent=avgMood;
+
+  // Alerts: mood 1-2 in last 3 days consecutively OR today mood 1
+  const alertIds=[];
+  MEMBERS.forEach(m=>{
+    const mReports=reports.filter(r=>r.memberId===m.id).sort((a,b)=>b.ts-a.ts);
+    const last3=mReports.slice(0,3);
+    const lowStreak=last3.length>=2&&last3.every(r=>r.mood<=2);
+    const todayCritical=todayReports.find(r=>r.memberId===m.id&&r.mood===1);
+    const overload=todayReports.find(r=>r.memberId===m.id&&r.load==='over');
+    const aiAlert=todayReports.find(r=>r.memberId===m.id&&r.aiFlag===true);
+    if(lowStreak||todayCritical||overload||aiAlert) alertIds.push({m,reason:aiAlert?'🤖 AI検知：'+aiAlert.aiFlagReason:todayCritical?'気分：最悪':overload?'負荷：限界':'気分低下が続いています'});
+  });
+  document.getElementById('stat-alert').textContent=alertIds.length;
+
+  // Alert banner
+  const banner=document.getElementById('alert-banner');
+  if(alertIds.length){
+    banner.classList.add('show');
+    document.getElementById('alert-list').innerHTML=alertIds.map(({m,reason})=>
+      `<div class="alert-item"><div class="alert-dot"></div><strong>${m.name}</strong> — ${reason}</div>`).join('');
+  } else {
+    banner.classList.remove('show');
+  }
+
+  // Member grid
+  const grid=document.getElementById('member-grid');
+  grid.innerHTML=MEMBERS.map(m=>{
+    const tr=todayReports.find(r=>r.memberId===m.id);
+    const isAlert=alertIds.find(a=>a.m.id===m.id);
+    const mReports=reports.filter(r=>r.memberId===m.id).sort((a,b)=>b.ts-a.ts);
+    const streak=mReports.length;
+    const sc=tr?.aiStress==='hi'?'stress-hi':tr?.aiStress==='mid'?'stress-mid':'';
+    return`<div class="member-card ${isAlert?'alert-card':tr?'ok-card':''} ${sc}" onclick="openAdminMemberDetail('${m.id}')">
+      <div class="mc-left">
+        ${tr?`<div class="mc-avatar">${MOOD_EMOJI[tr.mood]}</div>`:`<div class="mc-avatar-none">👤</div>`}
+        ${streak>0?`<div class="mc-streak-v">${streak}日</div>`:''}
+      </div>
+      <div class="mc-center">
+        <div class="mc-name">${m.name}</div>
+        <div class="mc-role">${m.role} · ${CO_META[m.cid].short}</div>
+        ${tr?`<div class="mc-tags">
+            <span class="mc-load ${LOAD_CLASS[tr.load]}">${LOAD_LABEL[tr.load]}</span>
+            ${tr.aiStress?`<span class="mc-ai-badge ${aiStressClass(tr.aiStress)}">${aiStressLabel(tr.aiStress)}</span>`:''}
+            ${tr.aiEmotion?`<span class="mc-ai-badge ${aiEmotionClass(tr.aiEmotion)}">${aiEmotionLabel(tr.aiEmotion)}</span>`:''}
+            ${tr.aiFlag?`<span class="mc-ai-badge ai-score-stress-hi">⚠️ 要注意</span>`:''}
+          </div>
+          ${tr.aiSummary?`<div class="mc-ai-summary">💡 ${tr.aiSummary}</div>`:''}`
+        :`<div class="mc-no-input-txt">📝 未入力</div>`}
+      </div>
+      <div class="mc-right">
+        ${tr?`<div class="mc-date">${tr.date}</div>`:''}
+        ${tr?`<div style="font-size:10px;color:#444">入力済</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showAdminTab(t){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('#nav-admin .nt').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-admin-'+t).classList.add('active');
+  event.target.classList.add('active');
+  if(t==='trend')renderTrendChart();
+}
+
+async function openAdminMemberDetail(id){
+  const m=MEMBERS.find(x=>x.id===id);
+  if(!m) return;
+  const allReports=await fetchReports();
+  const reports=allReports.filter(r=>r.memberId===id).sort((a,b)=>b.ts-a.ts).slice(0,14);
+  const latest=reports[0];
+  const co=CO_META[m.cid];
+
+  document.getElementById('mbody-admin').innerHTML=`
+    <div class="amd-header">
+      <div class="amd-name">${m.name}</div>
+      <div class="amd-meta">${co.name} · ${m.dept} · ${m.role}</div>
+    </div>
+    <div class="mbody">
+      ${latest?`
+        <div class="amd-mood-big">${MOOD_EMOJI[latest.mood]}</div>
+        <div class="amd-mood-lbl">最新：${latest.date}（${MOOD_LABEL[latest.mood]}）</div>
+        <div style="text-align:center;margin-bottom:14px">
+          <span class="mc-load ${LOAD_CLASS[latest.load]}" style="display:inline-block;padding:4px 12px;border-radius:6px;font-size:12px">${LOAD_LABEL[latest.load]}</span>
+        </div>
+        ${latest.comment?`<div style="background:var(--panel2);border-radius:8px;padding:10px 12px;font-size:12px;color:#ccc;line-height:1.7;margin-bottom:14px">💬 ${latest.comment}</div>`:''}
+        ${(latest.aiStress||latest.aiEmotion)?`
+          <div class="ai-analysis">
+            <div class="ai-analysis-title">🤖 AI分析</div>
+            <div class="ai-score-row">
+              ${latest.aiStress?`<span class="ai-score ${aiStressClass(latest.aiStress)}">${aiStressLabel(latest.aiStress)}</span>`:''}
+              ${latest.aiEmotion?`<span class="ai-score ${aiEmotionClass(latest.aiEmotion)}">${aiEmotionLabel(latest.aiEmotion)}</span>`:''}
+            </div>
+            ${latest.aiSummary?`<div class="ai-summary">📝 ${latest.aiSummary}</div>`:''}
+            ${latest.aiFlag?`<div class="ai-flag">⚠️ 要注意：${latest.aiFlagReason}</div>`:''}
+          </div>`:''}
+      `:`<div class="empty" style="padding:20px 0">まだ記録がありません</div>`}
+      ${reports.length?`
+        <div class="amd-history">
+          <div class="amd-hist-title">📅 履歴</div>
+          ${reports.map(r=>`
+            <div class="amd-hist-item">
+              <span class="amd-hist-date">${r.date}</span>
+              <span class="amd-hist-mood">${MOOD_EMOJI[r.mood]}</span>
+              <span class="amd-hist-load ${LOAD_CLASS[r.load]}">${LOAD_LABEL[r.load]}</span>
+              <span class="amd-hist-comment">${r.comment||'—'}${r.aiFlag?'  ⚠️':''}</span>
+            </div>`).join('')}
+        </div>`:''}
+      <button class="mcbtn" onclick="closeAdminModal()">閉じる</button>
+    </div>`;
+  document.getElementById('modal-admin').classList.add('open');
+}
+
+function closeAdminModal(e){
+  if(!e||e.target===document.getElementById('modal-admin'))
+    document.getElementById('modal-admin').classList.remove('open');
+}
+
+// ================================================================
+// TREND CHART (vanilla canvas)
+// ================================================================
+async function renderTrendChart(){
+  const memberId=document.getElementById('trend-name-sel').value;
+  const allReports=await fetchReports();
+  const days=14;
+  const dateArr=[];
+  for(let i=days-1;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dateArr.push(d.toISOString().slice(0,10));}
+
+  let moodData,loadData;
+  if(memberId){
+    const mReports=allReports.filter(r=>r.memberId===memberId);
+    moodData=dateArr.map(d=>{const r=mReports.find(x=>x.date===d);return r?r.mood:null;});
+    loadData=dateArr.map(d=>{const r=mReports.find(x=>x.date===d);return r?({lo:1,mid:2,hi:3,over:4}[r.load]||null):null;});
+  } else {
+    moodData=dateArr.map(d=>{
+      const dayReps=allReports.filter(r=>r.date===d);
+      if(!dayReps.length)return null;
+      return dayReps.reduce((s,r)=>s+r.mood,0)/dayReps.length;
+    });
+    loadData=dateArr.map(d=>{
+      const dayReps=allReports.filter(r=>r.date===d);
+      if(!dayReps.length)return null;
+      const lMap={lo:1,mid:2,hi:3,over:4};
+      return dayReps.reduce((s,r)=>s+(lMap[r.load]||0),0)/dayReps.length;
+    });
+  }
+  drawChart('trend-canvas',dateArr,moodData,'#4CAF82',5,'気分');
+  drawChart('load-canvas',dateArr,loadData,'#E0C955',4,'負荷');
+}
+
+function drawChart(canvasId,labels,data,color,maxY,label){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.offsetWidth||300;
+  const H=120;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+  const pad={l:28,r:12,t:10,b:24};
+  const cW=W-pad.l-pad.r;const cH=H-pad.t-pad.b;
+
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;
+  for(let i=0;i<=maxY;i++){
+    const y=pad.t+cH-(i/maxY)*cH;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cW,y);ctx.stroke();
+    ctx.fillStyle='#555';ctx.font=`9px sans-serif`;ctx.textAlign='right';
+    ctx.fillText(i,pad.l-4,y+3);
+  }
+
+  // x labels
+  const step=Math.ceil(labels.length/7);
+  ctx.fillStyle='#555';ctx.font=`8px sans-serif`;ctx.textAlign='center';
+  labels.forEach((d,i)=>{
+    if(i%step===0){
+      const x=pad.l+(i/(labels.length-1))*cW;
+      ctx.fillText(d.slice(5),x,H-6);
+    }
+  });
+
+  // line
+  const points=data.map((v,i)=>({x:pad.l+(i/(labels.length-1))*cW,y:v!==null?pad.t+cH-((v/maxY)*cH):null}));
+  ctx.strokeStyle=color;ctx.lineWidth=2;ctx.lineJoin='round';ctx.lineCap='round';
+  let started=false;
+  points.forEach((p,i)=>{
+    if(p.y===null){started=false;return;}
+    if(!started){ctx.beginPath();ctx.moveTo(p.x,p.y);started=true;}
+    else ctx.lineTo(p.x,p.y);
+    if(i===points.length-1||points[i+1]?.y===null) ctx.stroke();
+  });
+
+  // dots
+  points.forEach(p=>{
+    if(p.y===null)return;
+    ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);
+    ctx.fillStyle=color;ctx.fill();
+  });
+}
+
+// ================================================================
+// PATROL (巡回シート)
+// ================================================================
+function getSal(m){if(m.salary)return m.salary;return(RB[m.rank]||0)+(RA[m.role]||0)+(m.note?KA[m.note]||0:0);}
+function rw(r){const i=ROLE_ORD.indexOf(r);return i<0?99:i}
+function rc(r){return 'r'+r}
+function nbadge(note){if(!note)return '';const n=NOTES[note];return`<span class="badge ${n.c}">${n.s}</span>`;}
+
+function getMembersForTab(cid){
+  const primary=MEMBERS.filter(m=>m.cid===cid);
+  const conc=MEMBERS.filter(m=>m.cid!==cid&&m.concurrent&&m.concurrent.some(c=>c.cid===cid)).map(m=>{const c=m.concurrent.find(c=>c.cid===cid);return{...m,_displayRole:c.role,_displayDept:c.dept,_isConcurrent:true};});
+  return [...primary,...conc];
+}
+function groupByDept(members){const map={};members.forEach(m=>{const d=m._displayDept||m.dept;if(!map[d])map[d]=[];map[d].push(m);});return map;}
+
+function rowHTML(m,showCo=false){
+  const s=getSal(m);const displayRole=m._displayRole||m.role;const isMgmt=rw(displayRole)<=7;
+  const hasConcurrent=!!(m.concurrent&&m.concurrent.length>0)||m._isConcurrent;
+  const key=encodeURIComponent(m.id);
+  return`<div class="mr${isMgmt?' mgmt':''}${m.isNew?' isnew':''}" onclick="openPatrolModal('${key}')">
+    <div class="rk ${rc(m.rank)}">${m.rank}</div>
+    <div class="mi">
+      <div class="mn">${m.name}${hasConcurrent?' <span class="badge b-ken">兼</span>':''}${m.isNew?' <span class="badge b-new">新</span>':''}</div>
+      <div class="mrl"><span class="mro">${displayRole}</span>${nbadge(m.note)}${showCo?`<span style="font-size:9px;color:#555">${CO_META[m.cid].short}</span>`:''}</div>
+    </div>
+    <div class="mrr">${showCo?`<div class="mdt">${CO_META[m.cid].short}</div>`:''}
+      <div class="msal">${s>0?'¥'+s.toLocaleString():'時給制'}</div></div>
+  </div>`;
+}
+
+function renderTab(cid,elId){
+  const co=CO_META[cid];const el=document.getElementById(elId);if(!el)return;
+  const all=getMembersForTab(cid);const grouped=groupByDept(all);
+  const primaryDepts=[...new Set(MEMBERS.filter(m=>m.cid===cid).map(m=>m.dept))];
+  const concDepts=[...new Set(Object.keys(grouped).filter(d=>!primaryDepts.includes(d)))];
+  const deptOrder=[...primaryDepts,...concDepts];
+  let h=`<div class="co-hdr"><div class="co-dot" style="background:${co.color};box-shadow:0 0 8px ${co.color}44"></div><div class="co-nm" style="color:${co.color}">${co.name}</div><div class="co-cnt">${all.length}名</div></div>`;
+  deptOrder.forEach(dept=>{const ms=grouped[dept];if(!ms||!ms.length)return;h+=`<div class="dlbl">${dept}</div>`;[...ms].sort((a,b)=>rw(a._displayRole||a.role)-rw(b._displayRole||b.role)).forEach(m=>{h+=rowHTML(m);});});
+  el.innerHTML=h;
+}
+
+function openPatrolModal(id){
+  const m=MEMBERS.find(x=>x.id===id);if(!m)return;
+  const co=CO_META[m.cid];const s=getSal(m);const base=RB[m.rank]||0;const roleA=RA[m.role]||0;const kubunA=m.note?KA[m.note]||0:0;
+  const concList=(m.concurrent||[]).map(c=>{const cm=CO_META[c.cid];return`<div class="mmulti-it"><span style="width:8px;height:8px;border-radius:50%;background:${cm.color};display:inline-block;flex-shrink:0"></span><span>${cm.name}（${c.dept} / ${c.role}）</span></div>`;}).join('');
+  document.getElementById('mbody-patrol').innerHTML=`
+    <div class="mey">MEMBER</div><div class="mname">${m.name}${m.isNew?' <span class="badge b-new">新</span>':''}</div>
+    <div class="mco"><span style="width:8px;height:8px;border-radius:50%;background:${co.color};display:inline-block;flex-shrink:0"></span>${co.name} — ${m.dept}</div>
+    <div class="msal-big">${s>0?'¥'+s.toLocaleString():'時給制'}</div><div class="msal-sub">月次支給総額（目安）</div>
+    <div class="mdiv"></div>
+    <div class="mrow"><span class="mkey">役席</span><span class="mval">${m.role}${m.note?' '+nbadge(m.note):''}</span></div>
+    <div class="mrow"><span class="mkey">階級</span><span class="mval"><span class="rk ${rc(m.rank)}" style="width:auto;height:auto;padding:2px 10px;font-size:13px">${m.rank}</span></span></div>
+    <div class="mrow"><span class="mkey">基本給</span><span class="mval">¥${base.toLocaleString()}</span></div>
+    <div class="mrow"><span class="mkey">役席手当</span><span class="mval">¥${roleA.toLocaleString()}</span></div>
+    ${kubunA>0?`<div class="mrow"><span class="mkey">${NOTES[m.note].f}手当</span><span class="mval" style="color:var(--gold)">+¥${kubunA.toLocaleString()}</span></div>`:''}
+    ${m.salary?`<div class="mrow"><span class="mkey">実額設定</span><span class="mval" style="color:var(--gold)">¥${m.salary.toLocaleString()}</span></div>`:''}
+    ${concList?`<div class="mmulti"><div class="mmulti-lbl">兼務先</div>${concList}</div>`:''}
+    <button class="mcbtn" onclick="closePatrolModal()">閉じる</button>`;
+  document.getElementById('modal-patrol').classList.add('open');
+}
+function closePatrolModal(e){if(!e||e.target===document.getElementById('modal-patrol'))document.getElementById('modal-patrol').classList.remove('open');}
+
+let curTab='hq';
+function doSearch(q){
+  q=q.trim();
+  if(!q){document.getElementById('sec-search').classList.remove('active');document.getElementById('tab-'+curTab)?.classList.add('active');return;}
+  document.querySelectorAll('.sec:not(#sec-search)').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-search').classList.add('active');
+  const ql=q.toLowerCase().replace(/\s/g,'');
+  const res=MEMBERS.filter(m=>m.name.replace(/\s/g,'').toLowerCase().includes(ql)||m.role.includes(q)||m.dept.includes(q)||(CO_META[m.cid]?.name||'').includes(q));
+  document.getElementById('sc-cnt').textContent=`${res.length}件ヒット`;
+  document.getElementById('sc-res').innerHTML=res.length===0?'<div class="empty">該当するメンバーが見つかりません</div>':res.sort((a,b)=>rw(a.role)-rw(b.role)).map(m=>rowHTML(m,true)).join('');
+}
+
+function showTab(id){
+  document.getElementById('si').value='';
+  document.getElementById('sec-search').classList.remove('active');
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nt').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id)?.classList.add('active');
+  document.querySelectorAll('.nt').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'"))b.classList.add('active');});
+  curTab=id;document.getElementById('content').scrollTop=0;
+}
+
+function buildGuide(){
+  document.getElementById('role-g').innerHTML=[['会長・社長・執行役・代表取締役','¥0'],['部長','¥300,000'],['部長代理','¥200,000'],['次長','¥150,000'],['次長代理','¥100,000'],['課長','¥80,000'],['課長代理','¥60,000'],['係長','¥50,000'],['係長代理','¥30,000'],['主任','¥20,000'],['主任補佐','¥10,000'],['副店長','¥15,000'],['担当','¥5,000'],['担当補佐','¥2,000']].map(([r,a])=>`<div class="grow"><span class="glbl">${r}</span><span class="gval">${a}</span></div>`).join('');
+  document.getElementById('rank-g').innerHTML=[{r:'S1',b:'1,000,000〜'},{r:'S2',b:'700,000〜'},{r:'S3',b:'500,000〜'},{r:'A1',b:'460,000〜'},{r:'A2',b:'440,000〜'},{r:'A3',b:'420,000〜'},{r:'B1',b:'380,000〜'},{r:'B2',b:'360,000〜'},{r:'B3',b:'340,000〜'},{r:'C1',b:'320,000〜'},{r:'C2',b:'300,000〜'},{r:'C3',b:'280,000〜'},{r:'D1',b:'260,000〜'},{r:'D2',b:'240,000〜'},{r:'D3',b:'220,000〜'},{r:'E1',b:'200,000〜'},{r:'E2',b:'180,000〜'},{r:'E3',b:'160,000〜'}].map(({r,b})=>`<div class="rkc ${rc(r)}"><div class="rkc-n">${r}</div><div class="rkc-b">¥${b}</div></div>`).join('');
+  const actuals=MEMBERS.filter(m=>m.salary).sort((a,b)=>b.salary-a.salary);
+  document.getElementById('actual-t').innerHTML=`<thead><tr><th>氏名</th><th>主所属</th><th>役席</th><th>階級</th><th>実額</th></tr></thead><tbody>${actuals.map(m=>`<tr><td class="nm">${m.name}</td><td style="font-size:11px">${CO_META[m.cid].short}</td><td>${m.role}</td><td><span class="rk ${rc(m.rank)}" style="width:auto;height:auto;padding:1px 7px;font-size:11px">${m.rank}</span></td><td class="sv">¥${m.salary.toLocaleString()}</td></tr>`).join('')}</tbody>`;
+}
+
+// FAB
+document.getElementById('content').addEventListener('scroll',function(){document.getElementById('fab').classList.toggle('show',this.scrollTop>200);});
+function goTop(){document.getElementById('content').scrollTo({top:0,behavior:'smooth'})}
+
+
+// ================================================================
+// DEV: テスト用ダミーデータ注入
+// ================================================================
+function injectTestData(){
+  TEST_MODE=true; // Notionへのアクセスを止める
+  const today = new Date().toISOString().slice(0,10);
+  const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  const twoDaysAgo = new Date(Date.now()-172800000).toISOString().slice(0,10);
+
+  const testReports = [
+    {memberId:'suzuki_tae',date:today,ts:Date.now()-100,mood:5,load:'lo',comment:'今日は順調でした！チームの雰囲気も良くて楽しかったです',aiStress:'lo',aiEmotion:'pos',aiSummary:'非常に良好、継続サポート',aiFlag:false,aiFlagReason:''},
+    {memberId:'kobayashi_c',date:today,ts:Date.now()-200,mood:4,load:'mid',comment:'業務は普通です。特に問題ありません',aiStress:'lo',aiEmotion:'pos',aiSummary:'安定した状態',aiFlag:false,aiFlagReason:''},
+    {memberId:'sato_t',date:today,ts:Date.now()-300,mood:3,load:'hi',comment:'今日はとても忙しく、もっと改善しないといけない。これからやっていけるのであろうか',aiStress:'mid',aiEmotion:'neu',aiSummary:'不安感あり、声掛け推奨',aiFlag:false,aiFlagReason:''},
+    {memberId:'takeda_s',date:today,ts:Date.now()-400,mood:3,load:'hi',comment:'業務量が多くて少しきつい。でも何とかやれています',aiStress:'mid',aiEmotion:'neu',aiSummary:'負荷高め、業務確認を',aiFlag:false,aiFlagReason:''},
+    {memberId:'sasaki_y',date:today,ts:Date.now()-500,mood:2,load:'hi',comment:'正直しんどいです。毎日帰りが遅くて体が限界に近い気がします',aiStress:'mid',aiEmotion:'neg',aiSummary:'疲弊感強め、面談推奨',aiFlag:false,aiFlagReason:''},
+    {memberId:'misaki_m',date:today,ts:Date.now()-600,mood:1,load:'over',comment:'もう限界です。消えてしまいたいくらい追い詰められています。誰にも言えなくて辛い',aiStress:'hi',aiEmotion:'neg',aiSummary:'深刻なSOSサイン検出',aiFlag:true,aiFlagReason:'消えたい・追い詰め・孤立感の表現あり'},
+    {memberId:'sasao_s',date:today,ts:Date.now()-700,mood:1,load:'over',comment:'体調が悪い日が続いています。仕事も手につかず、このまま続けられるか不安です',aiStress:'hi',aiEmotion:'neg',aiSummary:'体調・継続不安が深刻',aiFlag:true,aiFlagReason:'体調不良継続・将来への強い不安'},
+    {memberId:'nakagome_s',date:today,ts:Date.now()-800,mood:3,load:'mid',comment:'',aiStress:'unknown',aiEmotion:'unknown',aiSummary:'コメントなし',aiFlag:false,aiFlagReason:''},
+    {memberId:'yamashita_y',date:today,ts:Date.now()-900,mood:4,load:'lo',comment:'まあまあです',aiStress:'lo',aiEmotion:'neu',aiSummary:'概ね良好',aiFlag:false,aiFlagReason:''},
+    {memberId:'misaki_m',date:yesterday,ts:Date.now()-90000,mood:1,load:'over',comment:'昨日もしんどかった',aiStress:'hi',aiEmotion:'neg',aiSummary:'昨日も深刻',aiFlag:true,aiFlagReason:'継続的なストレス高'},
+    {memberId:'sasao_s',date:yesterday,ts:Date.now()-91000,mood:2,load:'hi',comment:'体調不良続く',aiStress:'hi',aiEmotion:'neg',aiSummary:'連続してストレス高',aiFlag:true,aiFlagReason:'体調不良継続'},
+    {memberId:'sato_t',date:yesterday,ts:Date.now()-92000,mood:3,load:'hi',comment:'昨日も忙しかった',aiStress:'mid',aiEmotion:'neu',aiSummary:'負荷継続中',aiFlag:false,aiFlagReason:''},
+    {memberId:'suzuki_tae',date:yesterday,ts:Date.now()-93000,mood:5,load:'lo',comment:'昨日も良かった',aiStress:'lo',aiEmotion:'pos',aiSummary:'良好継続',aiFlag:false,aiFlagReason:''},
+    {memberId:'suzuki_tae',date:twoDaysAgo,ts:Date.now()-180000,mood:4,load:'lo',comment:'',aiStress:'lo',aiEmotion:'pos',aiSummary:'良好',aiFlag:false,aiFlagReason:''},
+  ];
+
+  // キャッシュに強制セット
+  localStorage.setItem('ohka_reports_cache', JSON.stringify(testReports));
+  localStorage.setItem('ohka_cache_ts', Date.now().toString());
+
+  // 管理者ダッシュボードに直接遷移して再レンダリング
+  document.getElementById('mode-select').classList.remove('show');
+  document.getElementById('app').style.display='flex';
+  document.getElementById('nav-patrol').style.display='none';
+  document.getElementById('nav-member').style.display='none';
+  document.getElementById('nav-admin').style.display='contents';
+  document.getElementById('hdr-title').textContent='管理者ダッシュボード';
+  document.getElementById('hdr-mode-badge').className='hdr-mode hdr-mode-admin';
+  document.getElementById('hdr-mode-badge').textContent='管理';
+  document.getElementById('search-bar').style.display='none';
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-admin-dashboard').classList.add('active');
+  currentMode='admin';
+  renderAdminDashboard();
+}
+
+// INIT
+['hq','ageha','kome','miraise','entertain','piyo','comfany'].forEach(cid=>renderTab(cid,cid+'-list'));
+buildGuide();
+
+// Show mode select after splash
+setTimeout(()=>{
+  const splash=document.getElementById('splash');
+  if(splash){splash.style.display='none';}
+  document.getElementById('mode-select').classList.add('show');
+},1900);
+// テストボタンをページロード直後から使えるようにする
+document.addEventListener('DOMContentLoaded',()=>{});
+</script>
+</body>
+</html>
